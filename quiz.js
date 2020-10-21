@@ -15,169 +15,109 @@ let answers = [];
 let correctAnswerCount = 0;
 
 //DOM要素を取得
-const $quizNumber = document.getElementById('quiz-number');
-const $genre = document.getElementById('genre');
-const $difficulty = document.getElementById('difficulty');
-const $startBtn = document.getElementById('start-btn');
-const $quizQuestion = document.getElementById('quiz-question');
-const $answers = document.getElementById('answers');
+const quizNumber = document.getElementById('quiz-number');
+const genre = document.getElementById('genre');
+const difficulty = document.getElementById('difficulty');
+const startBtn = document.getElementById('start-btn');
+const quizQuestion = document.getElementById('quiz-question');
+const answerBtn = document.getElementById('answers');
+
+//開始ボタンクリックの処理
+startBtn.addEventListener('click', () => {
+  processingScreen();
+  startBtn.classList.add('none');
+  correctAnswerCount = 0;
+  quizNum = 1;
+  quizIndex = 0;
+});
 
 //fetchApi取得中
 const processingScreen = () => {
-  $quizNumber.textContent = '取得中';
-  $quizQuestion.textContent = '少々お待ち下さい';
-  geQuizObject(url).then(data => setQuiz(data));
+  quizNumber.textContent = '取得中';
+  quizQuestion.textContent = '少々お待ち下さい';
+  geQuizObject(url).then(data => getQuizDatas(data));
 };
 
-//開始ボタンクリックの処理
-$startBtn.addEventListener('click', () => {
-  processingScreen();
-  $startBtn.classList.add('none');
-   correctAnswerCount = 0;
-   quizNum = 1;
-   quizIndex = 0;
-});
+//各クイズデータを取り出しclassに入れる
+const getQuizDatas = (data) =>{
+  const quizData = new Createquiz(quizNum, data.results[quizIndex].category, data.results[quizIndex].difficulty, data.results[quizIndex].question, data.results[quizIndex].correct_answer, data.results[quizIndex].incorrect_answers)
 
-//問題文をセット
-const setQuiz = (data) => {
-  console.log(data.results);
-  while ($answers.firstChild) {
-    $answers.removeChild($answers.firstChild);
-  };
-  $quizNumber.textContent = `問題${quizNum}`;
-  $genre.textContent = `[ジャンル] ${data.results[quizIndex].category}`;
-  $difficulty.textContent = `[難易度] ${data.results[quizIndex].difficulty}`;
-  $quizQuestion.textContent = data.results[quizIndex].question;
-  pushAnswer(data)
-  createBtn(data);
+  quizData.setQuiz();
+  quizData.pushAnswer();
+  quizData.createBtn(data);
 };
 
-//配列の中に答えをプッシュする処理
-const pushAnswer = (data) => {
-  answers.push(data.results[quizIndex].incorrect_answers[0]);
-  answers.push(data.results[quizIndex].incorrect_answers[1]);
-  answers.push(data.results[quizIndex].incorrect_answers[2]);
-  answers.push(data.results[quizIndex].correct_answer);
-  shuffleAnswers();
-};
+//クラスを定義する
+class Createquiz {
 
-//答えをランダムに並び替える処理
-const shuffleAnswers = () => {
-  for (let i = answers.length - 1; i >= 0; i--) {
-    const shuffleAnswer = Math.floor(Math.random() * (i + 1));
-    [answers[i], answers[shuffleAnswer]] = [answers[shuffleAnswer], answers[i]];
+  constructor(quiznumber, genre, difficulty, question, correct_answer, incorrect_answers) {
+    this.quiznumber = quiznumber;
+    this.genre = genre;
+    this.difficulty = difficulty;
+    this.question = question;
+    this.correct_answer = correct_answer;
+    this.incorrect_answers = incorrect_answers;
   }
-};
-
-//ボタンの作成
-const createBtn = (data) => {
-  const createBtnOne = document.createElement('button');
-  const createBtnTwo = document.createElement('button');
-  const createBtnThree = document.createElement('button');
-  const createBtnFour = document.createElement('button');
-
-  createBtnOne.classList.add('block');
-  createBtnTwo.classList.add('block');
-  createBtnThree.classList.add('block');
-  createBtnFour.classList.add('block');
-
-  createBtnOne.textContent = answers[0];
-  createBtnTwo.textContent = answers[1];
-  createBtnThree.textContent = answers[2];
-  createBtnFour.textContent = answers[3];
-
-  $answers.appendChild(createBtnOne);
-  $answers.appendChild(createBtnTwo);
-  $answers.appendChild(createBtnThree);
-  $answers.appendChild(createBtnFour);
   
-    //各ボタンにクリックイベントを追加
-    createBtnOne.addEventListener('click', (e) => {
-      if (e.target.textContent === data.results[quizIndex].correct_answer) {
-        correctAnswerCount++;
-      }
+  //クイズをhtmlに反映させる
+  setQuiz(){
+    while (answerBtn.firstChild) {
+      answerBtn.removeChild(answerBtn.firstChild);
+    };
+    quizNumber.textContent = `問題${this.quiznumber}`;
+    genre.textContent = `[ジャンル] ${this.genre}`;
+    difficulty.textContent = `[難易度] ${this.difficulty}`;
+    quizQuestion.textContent = this.question;
+  }
 
-      quizIndex++;
-      quizNum++;
-      answers.length = 0;
+  //配列にpushする処理
+  pushAnswer = () => {
+    answers.push(this.incorrect_answers[0]);
+    answers.push(this.incorrect_answers[1]);
+    answers.push(this.incorrect_answers[2]);
+    answers.push(this.correct_answer);
+    this.shuffleAnswers();
+  };
 
-      if (quizIndex < data.results.length) {
-        setQuiz(data);
-      } else {
-        while ($answers.firstChild) {
-          $answers.removeChild($answers.firstChild);
-        };
-        $quizNumber.textContent = `あなたの正解数は${correctAnswerCount}です`;
-        $quizQuestion.textContent = '再度チャレンジしたい場合は以下をクリック';
-        $genre.textContent = '';
-        $difficulty.textContent = '';
-        $startBtn.classList.remove('none');
-      }
-    });
-    createBtnTwo.addEventListener('click', (e) => {
-      if (e.target.textContent === data.results[quizIndex].correct_answer) {
-        correctAnswerCount++;
-      }
+  //答えをランダムに並び替える処理
+  shuffleAnswers = () => {
+    for (let i = answers.length - 1; i >= 0; i--) {
+      const shuffleAnswer = Math.floor(Math.random() * (i + 1));
+      [answers[i], answers[shuffleAnswer]] = [answers[shuffleAnswer], answers[i]];
+    }
+  };
 
-      quizIndex++;
-      quizNum++;
-      answers.length = 0;
+  //ボタンの作成
+  createBtn = (data) => {
 
-      if (quizIndex < data.results.length) {
-        setQuiz(data);
-      } else {
-        while ($answers.firstChild) {
-          $answers.removeChild($answers.firstChild);
-        };
-        $quizNumber.textContent = `あなたの正解数は${correctAnswerCount}です`;
-        $quizQuestion.textContent = '再度チャレンジしたい場合は以下をクリック';
-        $genre.textContent = '';
-        $difficulty.textContent = '';
-        $startBtn.classList.remove('none');
-      }
-    });
-    createBtnThree.addEventListener('click', (e) => {
-      if (e.target.textContent === data.results[quizIndex].correct_answer) {
-        correctAnswerCount++;
-      }
+    for (let i = 0; i < 4; i++) {
+      const choiceBtn = document.createElement('button');
+      choiceBtn.classList.add('block');
+      choiceBtn.textContent = answers[i];
+      answerBtn.appendChild(choiceBtn);
 
-      quizIndex++;
-      quizNum++;
-      answers.length = 0;
+      choiceBtn.addEventListener('click', (e) => {
+        if (e.target.textContent === this.correct_answer) {
+          correctAnswerCount++;
+        }
 
-      if (quizIndex < data.results.length) {
-        setQuiz(data);
-      } else {
-        while ($answers.firstChild) {
-          $answers.removeChild($answers.firstChild);
-        };
-        $quizNumber.textContent = `あなたの正解数は${correctAnswerCount}です`;
-        $quizQuestion.textContent = '再度チャレンジしたい場合は以下をクリック';
-        $genre.textContent = '';
-        $difficulty.textContent = '';
-        $startBtn.classList.remove('none');
-      }
-    });
-    createBtnFour.addEventListener('click', (e) => {
-      if (e.target.textContent === data.results[quizIndex].correct_answer) {
-        correctAnswerCount++;
-      }
+        quizIndex++;
+        quizNum++;
+        answers.length = 0;
 
-      quizIndex++;
-      quizNum++;
-      answers.length = 0;
-
-      if (quizIndex < data.results.length) {
-        setQuiz(data);
-      } else {
-        while ($answers.firstChild) {
-          $answers.removeChild($answers.firstChild);
-        };
-        $quizNumber.textContent = `あなたの正解数は${correctAnswerCount}です`;
-        $quizQuestion.textContent = '再度チャレンジしたい場合は以下をクリック';
-        $genre.textContent = '';
-        $difficulty.textContent = '';
-        $startBtn.classList.remove('none');
-      }
-    });
+        if (quizIndex < data.results.length) {
+          getQuizDatas(data);
+        } else {
+          while (answerBtn.firstChild) {
+            answerBtn.removeChild(answerBtn.firstChild);
+          };
+          quizNumber.textContent = `あなたの正解数は${correctAnswerCount}です`;
+          quizQuestion.textContent = '再度チャレンジしたい場合は以下をクリック';
+          genre.textContent = '';
+          difficulty.textContent = '';
+          startBtn.classList.remove('none');
+          }
+      });
+    };
+  };
 };
