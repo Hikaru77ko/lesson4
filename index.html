@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    p {
+      border-top: solid 1px black;
+      border-bottom: solid 1px black;
+      line-height: 3;
+    }
+    .none {
+      display: none;
+    }
+    .block {
+      display: block;
+      margin-bottom: 5px;
+    }
+    #genre {
+      margin-bottom: 0px;
+    }
+    #difficulty {
+      margin-top: 0px;
+    }
+  </style>
+  <title>クイズアプリ</title>
+</head>
+<body>
+  <h1 id="quiz-number">ようこそ</h1>
+  <div>
+    <h3 id="genre"></h3>
+    <h3 id="difficulty"></h3>
+  </div>
+  <p id="quiz-question">以下のボタンをクリック</p>
+  <button type="button" id="start-btn">開始</button>
+  <div id="answers">
+  </div>
+  <script src="quiz.js"></script>
+</body>
+</html>
